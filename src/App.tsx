@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { FunctionComponent } from 'react';
+import type { FunctionComponent } from 'react';
 
  
 const App: FunctionComponent = () => {
