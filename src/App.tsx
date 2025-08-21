@@ -1,6 +1,8 @@
 import * as React from 'react';
 import type { FunctionComponent } from 'react';
 import { Space, Table, TableProps, Button } from "antd";
+import Modal from './components/modal';
+import { createPortal } from 'react-dom';
 
 interface DataType {
   name: string;
@@ -13,10 +15,10 @@ interface DataType {
   key: number
 }
 
-
 const App: FunctionComponent = () => {
 
   const [data, setData]  = React.useState<DataType[]>([])
+  const [showModal, setShowModal] = React.useState(false)
 
   const handleDelete = (id:number) => {
     setData(prev => prev.filter(e => e.key !== id))
@@ -51,9 +53,12 @@ const App: FunctionComponent = () => {
     }
   ]
 
-  return (<div>
+  return (<div >
+    <Button variant='solid' color='pink' block onClick={() => setShowModal(true)}>Add</Button>
 
     <Table<DataType> columns={columns} dataSource={data} />
+
+    {showModal && createPortal (<Modal onClose={() => setShowModal(false)}/>, document.body)}
 
   </div>);
 }
