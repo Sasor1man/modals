@@ -1,10 +1,13 @@
-import { Button, Card, DatePicker, Input } from "antd";
-import { FunctionComponent } from "react";
+import { Button, Card, DatePicker, Input, Flex, InputNumber } from "antd";
+import { FunctionComponent, useRef, useState } from "react";
 
 
 interface ModalProps {
-    onClose: () => void
+    onClose: () => void,
+    handleApply: (form: React.RefObject<HTMLFormElement>, validationFucn: (form: React.RefObject<HTMLFormElement>) => {name: string, date: string, num:string} | undefined )  => void
 }
+
+type Status = '' | 'error'
 
 const backgroundStyle: React.CSSProperties = {
     width: '100%',
@@ -17,19 +20,51 @@ const backgroundStyle: React.CSSProperties = {
 }
 
 const cardStyle: React.CSSProperties = {
-    position:'absolute',
+    position: 'absolute',
     top: '50%',
     left: '50%',
     translate: '-50% -50%',
-    zIndex:2
+    zIndex: 2
 }
- 
-const Modal: FunctionComponent<ModalProps> = ({onClose}) => {
-    return ( <div style={backgroundStyle}> 
-        <Card title="" style={cardStyle}>
-        <Input placeholder="Name"/> <DatePicker/> <Input type="number" placeholder="number"/> <Button onClick={() => onClose()}>Close</Button>
-        </Card>
-        </div> );
+
+const Modal: FunctionComponent<ModalProps> = ({ onClose, handleApply}) => {
+
+    const formRef = useRef<HTMLFormElement>(null)
+    const [nameStatus, setNameStatus] = useState<Status>('')
+    const [dateStatus, setDateStatus] = useState<Status>('')
+    const [numStatus, setNumStatus] = useState<Status>('')
+
+    const validation = (form: React.RefObject<HTMLFormElement>) => {
+        const current = form.current
+
+        const nameInput = current.elements.namedItem('name') as HTMLInputElement
+        const dataInput = current.elements.namedItem('data') as HTMLInputElement
+        const numInput = current.elements.namedItem('num') as HTMLInputElement
+
+        const name = nameInput.value
+        const date = dataInput.value
+        const num = numInput.value
+
+        name === '' ? setNameStatus('error') : setNameStatus('')
+        date === '' ? setDateStatus('error') : setDateStatus('')
+        num === '' ? setNumStatus('error') : setNumStatus('')
+
+        if (name !== '' && date !== '' && num !== '') return {name, date, num}
+    }
+
+    
+
+    return (<div style={backgroundStyle}>
+        <form ref={formRef}>
+            <Card title="" style={cardStyle}>
+                <Input placeholder="Name" name="name" status={nameStatus}/> <DatePicker name="data" status={dateStatus} /> <InputNumber type="number" placeholder="number" name="num" status={numStatus}/>
+                <Flex justify="space-between">
+                    <Button onClick={() => onClose()}>Close</Button>
+                    <Button onClick={() => handleApply(formRef as React.RefObject<HTMLFormElement>, validation)}>Apply</Button>
+                </Flex>
+            </Card>
+        </form>
+    </div>);
 }
- 
+
 export default Modal;

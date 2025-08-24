@@ -3,26 +3,40 @@ import type { FunctionComponent } from 'react';
 import { Space, Table, TableProps, Button } from "antd";
 import Modal from './components/modal';
 import { createPortal } from 'react-dom';
-
-interface DataType {
-  name: string;
-  date: {
-    day: number;
-    month: number;
-    year: number
-  };
-  num: number
-  key: number
-}
+import { DataType } from './types/datatype';
 
 const App: FunctionComponent = () => {
 
   const [data, setData]  = React.useState<DataType[]>([])
   const [showModal, setShowModal] = React.useState(false)
 
+
   const handleDelete = (id:number) => {
     setData(prev => prev.filter(e => e.key !== id))
   }
+
+  const handleApply = (form: React.RefObject<HTMLFormElement>, validationFucn: (form: React.RefObject<HTMLFormElement>) => {name: string, date: string, num:string} | undefined ) => {
+        const arrForSave = validationFucn(form)
+        if (arrForSave) {
+            const {date, name, num} = arrForSave
+            const dateArr = date.split('-')
+            const validatedDate = {
+                day : Number(dateArr[0]),
+                month: Number(dateArr[1]),
+                year: Number(dateArr[2])
+            }
+            const data: DataType = {
+                name,
+                date: validatedDate,
+                num: Number(num),
+                key
+            }
+            setData(prev => [...prev, data])
+            setShowModal(false)
+        }
+    }
+
+  const key: number = data.length
 
   const columns: TableProps<DataType>['columns'] = [
     {
@@ -58,7 +72,7 @@ const App: FunctionComponent = () => {
 
     <Table<DataType> columns={columns} dataSource={data} />
 
-    {showModal && createPortal (<Modal onClose={() => setShowModal(false)}/>, document.body)}
+    {showModal && createPortal (<Modal onClose={() => setShowModal(false)} handleApply={handleApply}/>, document.body)}
 
   </div>);
 }
